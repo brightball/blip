@@ -1497,7 +1497,10 @@ export function mergeChats(
               ? groupName(thread.chat, groupInfo, knownParticipantNames)
               : namedGroup(thread.name, thread.chat, aliases) || thread.chat))
         : (info.last_name || info.name || thread.name || thread.chat),
-      service: info.service || thread.service,
+      // DMs: keep sendServiceForMessages. Unified `any;-;+number` chats are
+      // stored as service_name SMS even when the live thread is iMessage;
+      // copying that here makes Blip send --service SMS/RCS (green).
+      service: group ? (info.service || thread.service) : thread.service,
       last_text: info.last === thread.last_ts ? info.last_text : messagePreview(thread.last_text),
       pinned,
       pin_order,

@@ -1034,6 +1034,27 @@ describe("complete conversation list (mergeChats)", () => {
     expect(out[0]!.unread).toBe(windowThread.unread);
   });
 
+  test("a unified SMS chat row does not override a DM's iMessage send service", () => {
+    const unified = { ...chats[0]!, service: "SMS" };
+    const out = mergeChats([windowThread], [unified], {}, {});
+    expect(out[0]!.service).toBe("iMessage");
+  });
+
+  test("a quiet SMS-only DM still carries the chats-list service", () => {
+    const out = mergeChats([], [chats[2]!], {}, {});
+    expect(out[0]!.chat).toBe("+15559990000");
+    expect(out[0]!.service).toBe("SMS");
+  });
+
+  test("a group already in the window keeps the chat-list service", () => {
+    const id = "ce5a593a78af408282d61461ade89135";
+    const windowGroup = { ...windowThread, chat: id, name: "Lunch Crew", service: "iMessage" };
+    const row = { ...chats[1]!, service: "SMS" };
+    const out = mergeChats([windowGroup], [row], {}, {});
+    expect(out[0]!.chat).toBe(id);
+    expect(out[0]!.service).toBe("SMS");
+  });
+
   test("pinned rows receive Messages-style names and cleaned latest previews", () => {
     const namedChats = chats.map((chat, index) => index === 0
       ? { ...chat, pin_name: "Pat", last_text: "Photo" }
